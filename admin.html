@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sigortacın.com — CRM</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%231a56db' d='M16 3L5 8v8c0 6.6 4.7 12.8 11 14.5C23.3 28.8 27 22.6 27 16V8z'/%3E%3Cpath d='M11 16l3 3 6-6' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..60,600;12..60,700;12..60,800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --base:#060e1c;--surf:#0b1a30;--surf2:#112240;--surf3:#1a3357;
+      --acc:#1a56db;--accl:#4f86f7;
+      --cta:#f59e0b;--ctad:#d97706;
+      --txt:#dce8f7;--muted:#6b8bb0;--muted2:#4a6a8a;
+      --bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.12);
+      --fd:'Bricolage Grotesque',sans-serif;--fb:'Plus Jakarta Sans',sans-serif;
+      --esp:cubic-bezier(.34,1.56,.64,1);--eout:cubic-bezier(.16,1,.3,1);
+      --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:24px;
+      --sb:240px;
+      /* Status colors */
+      --s-yeni:#1a56db;--s-arandi:#f59e0b;--s-degerlen:#f97316;
+      --s-teklif:#a855f7;--s-kazanildi:#22c55e;--s-kaybedildi:#ef4444;
+    }
+    html,body{height:100%;font-family:var(--fb);background:var(--base);color:var(--txt);overflow:hidden}
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+    input,select,textarea{font-family:inherit;color:var(--txt)}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:99px}
+
+    /* PIN OVERLAY */
+    #pin-ov{position:fixed;inset:0;z-index:9999;background:var(--base);display:flex;align-items:center;justify-content:center}
+    #pin-ov.hidden{display:none}
+    .pin-box{background:var(--surf);border:1px solid rgba(26,86,219,.2);border-radius:var(--r-xl);padding:48px 40px;text-align:center;width:300px;
+      box-shadow:0 4px 8px rgba(4,10,25,.7),0 16px 40px rgba(4,10,25,.55),0 48px 80px rgba(4,10,25,.4)}
+    .pin-logo{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--fd);font-weight:700;font-size:1.1rem;color:#f0f6ff;margin-bottom:28px}
+    .pin-logo svg{width:28px;height:28px}
+    .pin-box h2{font-family:var(--fd);font-weight:700;font-size:1.2rem;color:#f0f6ff;margin-bottom:6px}
+    .pin-box p{font-size:.82rem;color:var(--muted);margin-bottom:24px}
+    .pin-in{width:100%;text-align:center;font-size:1.8rem;letter-spacing:.4em;background:rgba(255,255,255,.04);
+      border:1px solid var(--bdr);border-radius:var(--r-md);padding:14px;outline:none;
+      transition:border-color .2s;margin-bottom:14px}
+    .pin-in:focus{border-color:var(--acc)}
+    .pin-btn{width:100%;padding:13px;background:var(--cta);color:#060e1c;font-weight:700;font-size:.95rem;
+      border-radius:var(--r-md);transition:background .2s,transform .15s var(--esp)}
+    .pin-btn:hover{background:var(--ctad);transform:translateY(-1px)}
+    .pin-btn:active{transform:translateY(0)}
+    .pin-err{font-size:.78rem;color:#fc8181;margin-top:10px;display:none}
+    .pin-err.show{display:block}
+
+    /* APP LAYOUT */
+    #app{display:flex;height:100vh;display:none}
+    #app.show{display:flex}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sb);flex-shrink:0;background:var(--base);border-right:1px solid var(--bdr);
+      display:flex;flex-direction:column;overflow-y:auto}
+    .sb-logo{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-weight:700;font-size:1rem;
+      color:#f0f6ff;padding:20px 20px 8px;letter-spacing:-.01em}
+    .sb-logo svg{width:26px;height:26px;flex-shrink:0}
+    .sb-divider{height:1px;background:var(--bdr);margin:12px 20px}
+    .sb-section{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted2);padding:10px 20px 6px}
+    .sb-link{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.875rem;font-weight:500;
+      color:var(--muted);border-radius:var(--r-md);margin:1px 8px;cursor:pointer;
+      transition:background .15s,color .15s}
+    .sb-link svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .sb-link:hover{background:rgba(255,255,255,.05);color:var(--txt)}
+    .sb-link.active{background:rgba(26,86,219,.15);color:var(--accl)}
+    .sb-link.active svg{stroke:var(--accl)}
+    .sb-count{margin-left:auto;font-size:.7rem;font-weight:700;background:rgba(26,86,219,.2);color:var(--accl);
+      padding:2px 7px;border-radius:99px}
+    .sb-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--bdr)}
+    .sb-site-link{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);
+      padding:8px 12px;border-radius:var(--r-md);transition:background .15s,color .15s}
+    .sb-site-link:hover{background:rgba(255,255,255,.05);color:var(--txt)}
+    .sb-site-link svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* MAIN */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .topbar{height:60px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;
+      justify-content:space-between;padding:0 28px;flex-shrink:0;background:var(--base)}
+    .topbar-title{font-family:var(--fd);font-size:1.1rem;font-weight:700;color:#f0f6ff;letter-spacing:-.01em}
+    .topbar-actions{display:flex;align-items:center;gap:8px}
+    .tb-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-sm);
+      font-size:.8rem;font-weight:600;transition:background .15s,transform .15s}
+    .tb-btn:active{transform:scale(.97)}
+    .tb-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .tb-btn-ghost{background:rgba(255,255,255,.05);border:1px solid var(--bdr);color:var(--muted)}
+    .tb-btn-ghost:hover{background:rgba(255,255,255,.09);color:var(--txt)}
+    .tb-btn-gold{background:var(--cta);color:#060e1c}
+    .tb-btn-gold:hover{background:var(--ctad)}
+
+    .content{flex:1;overflow-y:auto;padding:28px}
+
+    /* STAT CARDS */
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-lg);padding:20px 22px;
+      transition:border-color .2s,transform .2s var(--esp)}
+    .stat-card:hover{border-color:var(--bdr2);transform:translateY(-2px)}
+    .stat-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+    .stat-ico{width:38px;height:38px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center}
+    .stat-ico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .stat-badge{font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:99px}
+    .stat-val{font-family:var(--fd);font-size:2rem;font-weight:800;color:#f0f6ff;letter-spacing:-.03em;display:block;margin-bottom:2px}
+    .stat-lbl{font-size:.78rem;color:var(--muted)}
+
+    /* PIPELINE */
+    .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+    .card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-lg);padding:20px}
+    .card-title{font-family:var(--fd);font-weight:700;font-size:.95rem;color:#f0f6ff;margin-bottom:16px;letter-spacing:-.01em}
+    .pipeline-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .pipeline-label{font-size:.78rem;color:var(--muted);width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pipeline-bar{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+    .pipeline-fill{height:100%;border-radius:99px;transition:width .6s var(--eout)}
+    .pipeline-num{font-size:.78rem;font-weight:600;color:var(--txt);width:24px;text-align:right;flex-shrink:0}
+
+    /* TODAY FOLLOWUPS */
+    .followup-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+    .followup-item:last-child{border-bottom:none}
+    .fu-avatar{width:34px;height:34px;border-radius:50%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:700;font-size:.85rem;color:var(--accl);flex-shrink:0}
+    .fu-name{font-weight:600;font-size:.85rem;color:var(--txt)}
+    .fu-info{font-size:.75rem;color:var(--muted)}
+    .fu-tel{margin-left:auto;font-size:.8rem;color:var(--accl);font-weight:500}
+
+    /* RECENT LIST */
+    .recent-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .15s;border-radius:var(--r-sm);margin:0 -8px;padding:9px 8px}
+    .recent-item:last-child{border-bottom:none}
+    .recent-item:hover{background:rgba(255,255,255,.03)}
+    .ri-info{flex:1;min-width:0}
+    .ri-name{font-weight:600;font-size:.85rem;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ri-sub{font-size:.74rem;color:var(--muted)}
+    .ri-time{font-size:.72rem;color:var(--muted2);flex-shrink:0}
+
+    /* STATUS BADGE */
+    .badge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+    .badge-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+    /* FILTERS */
+    .filters{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+    .search-wrap{position:relative;flex:1;min-width:200px}
+    .search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .search-in{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-md);
+      padding:9px 12px 9px 36px;font-size:.875rem;outline:none;transition:border-color .2s}
+    .search-in:focus{border-color:var(--acc)}
+    .filter-sel{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-md);
+      padding:9px 12px;font-size:.82rem;outline:none;cursor:pointer;color:var(--txt);
+      transition:border-color .2s;-webkit-appearance:none;appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b8bb0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+    .filter-sel:focus{border-color:var(--acc)}
+    .filter-sel option{background:#0b1a30}
+    .filter-clear{font-size:.78rem;color:var(--muted);padding:9px 12px;border-radius:var(--r-md);border:1px solid var(--bdr);background:var(--surf);transition:color .15s,border-color .15s}
+    .filter-clear:hover{color:var(--txt);border-color:var(--bdr2)}
+
+    /* TABLE */
+    .tbl-wrap{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-lg);overflow:hidden}
+    .tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+    .tbl th{text-align:left;padding:11px 14px;background:rgba(255,255,255,.025);color:var(--muted);font-weight:700;
+      font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--bdr);
+      white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+    .tbl th:hover{color:var(--txt)}
+    .tbl th.sort-asc::after{content:' ↑'}
+    .tbl th.sort-desc::after{content:' ↓'}
+    .tbl td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+    .tbl tr:last-child td{border-bottom:none}
+    .tbl tbody tr{cursor:pointer;transition:background .15s}
+    .tbl tbody tr:hover td{background:rgba(255,255,255,.025)}
+    .tbl-name{font-weight:600;color:#f0f6ff}
+    .tbl-muted{color:var(--muted);font-size:.78rem}
+    .tbl-note{color:var(--muted);font-size:.74rem;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tbl-fu{font-size:.75rem}
+    .fu-today{color:#22c55e;font-weight:600}
+    .fu-overdue{color:#ef4444;font-weight:600}
+    .tbl-actions{display:flex;align-items:center;gap:6px}
+    .tbl-act-btn{padding:4px 8px;border-radius:var(--r-sm);font-size:.72rem;font-weight:600;transition:background .15s}
+    .act-open{background:rgba(26,86,219,.15);color:var(--accl)}
+    .act-open:hover{background:rgba(26,86,219,.25)}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+    .empty-state svg{width:48px;height:48px;stroke:var(--muted2);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 16px}
+    .empty-state p{font-size:.9rem}
+
+    /* KANBAN */
+    .kanban-wrap{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;height:calc(100vh - 140px)}
+    .kanban-col{flex-shrink:0;width:240px;display:flex;flex-direction:column;background:var(--surf);
+      border:1px solid var(--bdr);border-radius:var(--r-lg);overflow:hidden}
+    .kanban-col-hd{padding:12px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .kanban-col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .kanban-col-title{font-family:var(--fd);font-weight:700;font-size:.82rem;color:#f0f6ff;flex:1}
+    .kanban-col-count{font-size:.72rem;font-weight:700;background:rgba(255,255,255,.08);color:var(--muted);
+      padding:2px 7px;border-radius:99px}
+    .kanban-cards{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+    .kanban-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px;
+      cursor:pointer;transition:border-color .2s,transform .2s var(--esp),box-shadow .2s}
+    .kanban-card:hover{border-color:var(--bdr2);transform:translateY(-2px);
+      box-shadow:0 4px 16px rgba(4,10,25,.5)}
+    .kanban-card.drag-over{border-color:var(--accl);background:rgba(26,86,219,.1)}
+    .kc-name{font-weight:700;font-size:.85rem;color:#f0f6ff;margin-bottom:6px}
+    .kc-meta{display:flex;flex-direction:column;gap:3px}
+    .kc-row{display:flex;align-items:center;gap:5px;font-size:.74rem;color:var(--muted)}
+    .kc-row svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .kc-note{font-size:.72rem;color:var(--muted2);margin-top:8px;padding-top:8px;border-top:1px solid var(--bdr);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .kanban-drop{border:2px dashed var(--bdr2);border-radius:var(--r-md);min-height:60px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--muted2)}
+    .kanban-empty{font-size:.75rem;color:var(--muted2);text-align:center;padding:20px}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .bar-list{display:flex;flex-direction:column;gap:10px}
+    .bar-row{display:flex;align-items:center;gap:10px}
+    .bar-lbl{font-size:.78rem;color:var(--muted);width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bar-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:99px;transition:width .6s var(--eout)}
+    .bar-val{font-size:.75rem;font-weight:600;color:var(--txt);width:24px;text-align:right;flex-shrink:0}
+    .donut-wrap{display:flex;align-items:center;gap:24px}
+    .donut-legend{display:flex;flex-direction:column;gap:8px}
+    .legend-item{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted)}
+    .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .sparkline-wrap{overflow:hidden}
+    .spark-labels{display:flex;justify-content:space-between;margin-top:6px}
+    .spark-lbl{font-size:.65rem;color:var(--muted2)}
+    .win-rate{text-align:center;padding:20px 0}
+    .win-big{font-family:var(--fd);font-size:3rem;font-weight:800;color:#22c55e;letter-spacing:-.04em}
+    .win-sub{font-size:.82rem;color:var(--muted);margin-top:4px}
+    .city-list{display:flex;flex-direction:column;gap:8px}
+    .city-row{display:flex;align-items:center;gap:10px}
+    .city-rank{font-size:.7rem;font-weight:700;color:var(--muted2);width:18px;text-align:right;flex-shrink:0}
+    .city-name{font-size:.82rem;color:var(--txt);flex:1}
+    .city-bar{height:6px;border-radius:99px;background:rgba(26,86,219,.5);min-width:4px}
+    .city-num{font-size:.78rem;font-weight:600;color:var(--accl);width:24px;text-align:right;flex-shrink:0}
+
+    /* MODAL */
+    .modal-ov{position:fixed;inset:0;z-index:500;background:rgba(4,10,20,.8);backdrop-filter:blur(6px);
+      display:flex;align-items:center;justify-content:center;padding:24px}
+    .modal-ov.hidden{display:none}
+    .modal{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--r-xl);
+      width:100%;max-width:760px;max-height:90vh;display:flex;flex-direction:column;
+      box-shadow:0 8px 16px rgba(4,10,25,.8),0 32px 64px rgba(4,10,25,.6)}
+    .modal-hd{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;
+      border-bottom:1px solid var(--bdr)}
+    .modal-name{font-family:var(--fd);font-weight:700;font-size:1.15rem;color:#f0f6ff;letter-spacing:-.01em}
+    .modal-close{width:32px;height:32px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;
+      transition:background .15s;color:var(--muted)}
+    .modal-close:hover{background:rgba(255,255,255,.07);color:var(--txt)}
+    .modal-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .modal-body{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;flex:1}
+    .modal-left{padding:20px 24px;border-right:1px solid var(--bdr);overflow-y:auto}
+    .modal-right{padding:20px 24px;display:flex;flex-direction:column;overflow:hidden}
+    .modal-section{margin-bottom:20px}
+    .modal-sec-title{font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .info-item{}
+    .info-lbl{font-size:.7rem;color:var(--muted);margin-bottom:3px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+    .info-val{font-size:.875rem;color:var(--txt);font-weight:500}
+    .modal-field{margin-bottom:14px}
+    .modal-label{display:block;font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em}
+    .modal-select,.modal-date{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr);
+      border-radius:var(--r-md);padding:9px 12px;font-size:.875rem;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+    .modal-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b8bb0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+    .modal-select:focus,.modal-date:focus{border-color:var(--acc)}
+    .modal-select option{background:#0b1a30}
+    .modal-date::-webkit-calendar-picker-indicator{filter:invert(.6)}
+    /* Notes */
+    .notes-area{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;min-height:0}
+    .note-item{background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:var(--r-md);padding:10px 12px}
+    .note-text{font-size:.82rem;color:var(--txt);line-height:1.6;margin-bottom:6px;white-space:pre-wrap;word-break:break-word}
+    .note-time{font-size:.7rem;color:var(--muted2)}
+    .note-del{float:right;color:rgba(252,129,129,.4);font-size:.75rem;padding:2px 6px;border-radius:4px;transition:color .15s,background .15s}
+    .note-del:hover{color:#fc8181;background:rgba(239,68,68,.1)}
+    .notes-empty{text-align:center;padding:30px;color:var(--muted);font-size:.82rem}
+    .note-input-wrap{display:flex;flex-direction:column;gap:8px}
+    .note-ta{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:var(--r-md);
+      padding:10px 12px;font-size:.82rem;resize:none;height:80px;outline:none;line-height:1.6;transition:border-color .2s}
+    .note-ta:focus{border-color:var(--acc)}
+    .note-ta::placeholder{color:rgba(107,139,176,.4)}
+    .note-add-btn{align-self:flex-end;padding:8px 16px;background:rgba(26,86,219,.18);border:1px solid rgba(26,86,219,.35);
+      color:var(--accl);border-radius:var(--r-sm);font-size:.8rem;font-weight:600;transition:background .15s}
+    .note-add-btn:hover{background:rgba(26,86,219,.28)}
+    .modal-ft{padding:14px 24px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .del-lead-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(239,68,68,.1);
+      border:1px solid rgba(239,68,68,.25);color:#fc8181;border-radius:var(--r-sm);font-size:.8rem;font-weight:600;transition:background .15s}
+    .del-lead-btn:hover{background:rgba(239,68,68,.2)}
+    .del-lead-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .save-indicator{font-size:.75rem;color:#22c55e;opacity:0;transition:opacity .3s}
+    .save-indicator.show{opacity:1}
+  </style>
+</head>
+<body>
+
+<!-- PIN -->
+<div id="pin-ov">
+  <div class="pin-box">
+    <div class="pin-logo">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 3L5 8v8c0 6.6 4.7 12.8 11 14.5C23.3 28.8 27 22.6 27 16V8z" fill="#1a56db"/><path d="M11 16l3 3 6-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      sigortacın.com
+    </div>
+    <h2>CRM Girişi</h2>
+    <p>Devam etmek için PIN kodunuzu girin</p>
+    <input class="pin-in" type="password" id="pin-in" maxlength="4" placeholder="••••" autocomplete="off">
+    <button class="pin-btn" onclick="checkPin()">Giriş Yap</button>
+    <div class="pin-err" id="pin-err">Yanlış PIN. Tekrar deneyin.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 3L5 8v8c0 6.6 4.7 12.8 11 14.5C23.3 28.8 27 22.6 27 16V8z" fill="#1a56db"/><path d="M11 16l3 3 6-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      CRM
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Yönetim</div>
+    <div class="sb-link" data-view="dashboard" onclick="navigate('dashboard')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="sb-link" data-view="leads" onclick="navigate('leads')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Lead Listesi
+      <span class="sb-count" id="sb-count">0</span>
+    </div>
+    <div class="sb-link" data-view="kanban" onclick="navigate('kanban')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="11" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/></svg>
+      Kanban
+    </div>
+    <div class="sb-link" data-view="stats" onclick="navigate('stats')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      İstatistikler
+    </div>
+    <div class="sb-bottom">
+      <a href="index.html" class="sb-site-link">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Landing Page
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions" id="topbar-actions">
+        <button class="tb-btn tb-btn-ghost" id="refresh-btn" onclick="fetchLeadsFromSheets().then(()=>this.classList.remove('spinning'))" style="transition:opacity .2s">
+          <svg viewBox="0 0 24 24" id="refresh-ico" style="transition:transform .6s"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Yenile
+        </button>
+        <button class="tb-btn tb-btn-ghost" onclick="exportCSV()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV İndir
+        </button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov hidden" id="modal-ov" onclick="closeModalOnBg(event)">
+  <div class="modal" id="modal">
+    <div class="modal-hd">
+      <div class="modal-name" id="modal-name">—</div>
+      <button class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-left" id="modal-left"></div>
+      <div class="modal-right" id="modal-right"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="del-lead-btn" id="modal-del">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Lead'i Sil
+      </button>
+      <span class="save-indicator" id="save-ind">Kaydedildi ✓</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== CONSTANTS =====================
+const PIN = '1234';
+const STATUSES = {
+  yeni:      { label:'Yeni',                 color:'#1a56db', bg:'rgba(26,86,219,.15)' },
+  arandi:    { label:'Arandı',               color:'#f59e0b', bg:'rgba(245,158,11,.15)' },
+  degerlen:  { label:'Değerlendiriliyor',    color:'#f97316', bg:'rgba(249,115,22,.15)' },
+  teklif:    { label:'Teklife Gönderildi',   color:'#a855f7', bg:'rgba(168,85,247,.15)' },
+  kazanildi: { label:'Kazanıldı',            color:'#22c55e', bg:'rgba(34,197,94,.15)' },
+  kaybedildi:{ label:'Kaybedildi',           color:'#ef4444', bg:'rgba(239,68,68,.15)' },
+};
+const STATUS_KEYS = Object.keys(STATUSES);
+
+// ===================== DATA LAYER =====================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVMZ6H45Iregep3s1adiPj2rtlooSJY19NjMwAG_orNdZ2IDshPP42_jEui3OeV7_p/exec';
+
+const getLeads = () => {
+  const deleted = JSON.parse(localStorage.getItem('sigortaDeleted') || '[]');
+  return JSON.parse(localStorage.getItem('sigortaLeads') || '[]').filter(l => !deleted.includes(l.id));
+};
+const getCRM   = () => JSON.parse(localStorage.getItem('sigortaCRM') || '{}');
+const saveCRM  = (d) => localStorage.setItem('sigortaCRM', JSON.stringify(d));
+
+async function fetchLeadsFromSheets() {
+  try {
+    const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+    const leads = await res.json();
+    if (Array.isArray(leads)) {
+      localStorage.setItem('sigortaLeads', JSON.stringify(leads));
+      render();
+      if (currentLead) renderModal(currentLead);
+    }
+  } catch(e) { /* önbellekten devam */ }
+}
+
+function getLeadCRM(id) {
+  const crm = getCRM();
+  return crm[id] || { status:'yeni', notes:[], followUp:null, lastContact:null };
+}
+function setLeadCRM(id, data) {
+  const crm = getCRM();
+  crm[id] = { ...getLeadCRM(id), ...data };
+  saveCRM(crm);
+}
+function getMerged() {
+  const leads = getLeads();
+  const crm = getCRM();
+  return leads.map(l => ({ ...l, crm: crm[l.id] || { status:'yeni', notes:[], followUp:null } }));
+}
+
+// ===================== HELPERS =====================
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+}
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${fmtDate(iso)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function timeAgo(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff/60000), h = Math.floor(m/60), day = Math.floor(h/24);
+  if (day > 0) return `${day}g önce`;
+  if (h > 0) return `${h}s önce`;
+  if (m > 0) return `${m}d önce`;
+  return 'Az önce';
+}
+function initials(name) {
+  const p = (name||'').trim().split(' ');
+  return (p[0]?.[0]||'') + (p[1]?.[0]||'');
+}
+function isToday(dateStr) {
+  if (!dateStr) return false;
+  const t = new Date(); const d = new Date(dateStr);
+  return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+}
+function isOverdue(dateStr) {
+  if (!dateStr) return false;
+  return new Date(dateStr) < new Date() && !isToday(dateStr);
+}
+function badge(status) {
+  const s = STATUSES[status] || STATUSES.yeni;
+  return `<span class="badge" style="color:${s.color};background:${s.bg}"><span class="badge-dot" style="background:${s.color}"></span>${esc(s.label)}</span>`;
+}
+function lastNote(crm) {
+  if (!crm.notes || !crm.notes.length) return '';
+  return crm.notes[crm.notes.length-1].text;
+}
+
+// ===================== PIN =====================
+function checkPin() {
+  const val = document.getElementById('pin-in').value;
+  if (val === PIN) {
+    sessionStorage.setItem('admPinOk','1');
+    document.getElementById('pin-ov').classList.add('hidden');
+    document.getElementById('app').classList.add('show');
+    init();
+  } else {
+    document.getElementById('pin-err').classList.add('show');
+    document.getElementById('pin-in').value='';
+  }
+}
+document.getElementById('pin-in').addEventListener('keydown', e => { if(e.key==='Enter') checkPin(); });
+
+// ===================== ROUTER =====================
+let currentView = 'dashboard';
+let currentLead = null;
+let filters = { q:'', status:'', sigorta:'', sehir:'', sort:'tarih', dir:'desc' };
+
+function navigate(view) {
+  currentView = view;
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.toggle('active', l.dataset.view===view));
+  const titles = { dashboard:'Dashboard', leads:'Lead Listesi', kanban:'Kanban', stats:'İstatistikler' };
+  document.getElementById('topbar-title').textContent = titles[view]||view;
+  render();
+}
+
+function render() {
+  updateSbCount();
+  if (currentView==='dashboard') renderDashboard();
+  else if (currentView==='leads') renderLeads();
+  else if (currentView==='kanban') renderKanban();
+  else if (currentView==='stats') renderStats();
+}
+
+function updateSbCount() {
+  document.getElementById('sb-count').textContent = getLeads().length;
+}
+
+function init() {
+  navigate('dashboard');
+  fetchLeadsFromSheets();
+  setInterval(fetchLeadsFromSheets, 5 * 60 * 1000); // her 5 dakikada güncelle
+  window.addEventListener('storage', () => { render(); if(currentLead) renderModal(currentLead); });
+}
+
+// Startup
+if (sessionStorage.getItem('admPinOk')==='1') {
+  document.getElementById('pin-ov').classList.add('hidden');
+  document.getElementById('app').classList.add('show');
+  init();
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  const leads = getMerged();
+  const today = new Date().toISOString().slice(0,10);
+  const todayLeads = leads.filter(l => l.tarih?.slice(0,10)===today);
+  const followTodayAll = leads.filter(l => l.crm.followUp && isToday(l.crm.followUp));
+  const followOverdue = leads.filter(l => l.crm.followUp && isOverdue(l.crm.followUp));
+  const won = leads.filter(l => l.crm.status==='kazanildi').length;
+  const closed = leads.filter(l => l.crm.status==='kaybedildi').length;
+  const winRate = (won+closed>0) ? Math.round(won/(won+closed)*100) : 0;
+  const recent5 = leads.slice().sort((a,b)=>new Date(b.tarih)-new Date(a.tarih)).slice(0,5);
+
+  // pipeline counts
+  const statusCounts = {};
+  STATUS_KEYS.forEach(k => statusCounts[k]=0);
+  leads.forEach(l => { const s=l.crm.status||'yeni'; statusCounts[s]=(statusCounts[s]||0)+1; });
+  const maxCount = Math.max(...Object.values(statusCounts),1);
+
+  const pipelineRows = STATUS_KEYS.map(k => {
+    const s = STATUSES[k];
+    const pct = (statusCounts[k]/maxCount*100).toFixed(1);
+    return `<div class="pipeline-row">
+      <span class="pipeline-label" title="${s.label}">${s.label}</span>
+      <div class="pipeline-bar"><div class="pipeline-fill" style="width:${pct}%;background:${s.color}"></div></div>
+      <span class="pipeline-num">${statusCounts[k]}</span>
+    </div>`;
+  }).join('');
+
+  const followItems = followTodayAll.slice(0,5).map(l =>
+    `<div class="followup-item">
+      <div class="fu-avatar">${esc(initials(l.ad))}</div>
+      <div>
+        <div class="fu-name">${esc(l.ad)}</div>
+        <div class="fu-info">${esc(l.sigorta)} · ${esc(l.sehir)}</div>
+      </div>
+      <a href="tel:${esc(l.tel)}" class="fu-tel" onclick="event.stopPropagation()">${esc(l.tel)}</a>
+    </div>`
+  ).join('') || '<div style="padding:20px;text-align:center;font-size:.82rem;color:var(--muted)">Bugün takip yok</div>';
+
+  const recentItems = recent5.map(l =>
+    `<div class="recent-item" onclick="openModal('${l.id}')">
+      <div class="fu-avatar" style="font-size:.75rem">${esc(initials(l.ad))}</div>
+      <div class="ri-info">
+        <div class="ri-name">${esc(l.ad)}</div>
+        <div class="ri-sub">${esc(l.sigorta)} · ${esc(l.sehir)}</div>
+      </div>
+      ${badge(l.crm.status||'yeni')}
+      <span class="ri-time">${timeAgo(l.tarih)}</span>
+    </div>`
+  ).join('') || '<div class="empty-state"><p>Henüz lead yok</p></div>';
+
+  document.getElementById('content').innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-ico" style="background:rgba(26,86,219,.15);color:var(--accl)">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+        </div>
+        <span class="stat-val">${leads.length}</span>
+        <span class="stat-lbl">Toplam Lead</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-ico" style="background:rgba(245,158,11,.15);color:#f59e0b">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+        </div>
+        <span class="stat-val">${todayLeads.length}</span>
+        <span class="stat-lbl">Bugün Gelen</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-ico" style="background:rgba(249,115,22,.15);color:#f97316">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          ${followOverdue.length>0?`<span class="stat-badge" style="background:rgba(239,68,68,.15);color:#ef4444">${followOverdue.length} gecikmiş</span>`:''}
+        </div>
+        <span class="stat-val">${followTodayAll.length + followOverdue.length}</span>
+        <span class="stat-lbl">Takip Bekleyen</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-ico" style="background:rgba(34,197,94,.15);color:#22c55e">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <span class="stat-val" style="color:#22c55e">%${winRate}</span>
+        <span class="stat-lbl">Kazanma Oranı</span>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title">Pipeline Durumu</div>
+        ${pipelineRows}
+      </div>
+      <div class="card">
+        <div class="card-title">Bugünün Takipleri</div>
+        ${followItems}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Son Gelenler</div>
+      ${recentItems}
+    </div>`;
+}
+
+// ===================== LEADS =====================
+let sortCol = 'tarih', sortDir = 'desc';
+
+function renderLeads() {
+  const allLeads = getMerged();
+  let leads = allLeads.filter(l => {
+    const q = filters.q.toLowerCase();
+    const matchQ = !q || l.ad.toLowerCase().includes(q) || l.tel.includes(q) || l.sehir.toLowerCase().includes(q);
+    const matchS = !filters.status || (l.crm.status||'yeni')===filters.status;
+    const matchSig = !filters.sigorta || l.sigorta===filters.sigorta;
+    const matchSehir = !filters.sehir || l.sehir===filters.sehir;
+    return matchQ && matchS && matchSig && matchSehir;
+  });
+
+  // Sort
+  leads.sort((a,b) => {
+    let va, vb;
+    if (sortCol==='tarih') { va=new Date(a.tarih); vb=new Date(b.tarih); }
+    else if (sortCol==='ad') { va=a.ad.toLowerCase(); vb=b.ad.toLowerCase(); }
+    else if (sortCol==='status') { va=a.crm.status||'yeni'; vb=b.crm.status||'yeni'; }
+    else if (sortCol==='followUp') { va=a.crm.followUp||''; vb=b.crm.followUp||''; }
+    else { va=''; vb=''; }
+    if (va<vb) return sortDir==='asc'?-1:1;
+    if (va>vb) return sortDir==='asc'?1:-1;
+    return 0;
+  });
+
+  const sigTypes = [...new Set(allLeads.map(l=>l.sigorta))].sort();
+  const sehirList = [...new Set(allLeads.map(l=>l.sehir))].sort();
+
+  function sortTh(col, label) {
+    const cls = sortCol===col ? (sortDir==='asc'?'sort-asc':'sort-desc') : '';
+    return `<th class="${cls}" onclick="sortBy('${col}')">${label}</th>`;
+  }
+
+  const rows = leads.map(l => {
+    const fu = l.crm.followUp;
+    let fuHtml = '—';
+    if (fu) {
+      if (isToday(fu)) fuHtml = `<span class="fu-today">Bugün</span>`;
+      else if (isOverdue(fu)) fuHtml = `<span class="fu-overdue">${fmtDate(fu)}</span>`;
+      else fuHtml = `<span class="tbl-fu">${fmtDate(fu)}</span>`;
+    }
+    const ln = lastNote(l.crm);
+    return `<tr onclick="openModal('${l.id}')">
+      <td><span class="tbl-name">${esc(l.ad)}</span><div class="tbl-muted">${esc(l.tel)}</div></td>
+      <td>${esc(l.sehir)}</td>
+      <td>${esc(l.sigorta)}</td>
+      <td>${badge(l.crm.status||'yeni')}</td>
+      <td class="tbl-fu">${fuHtml}</td>
+      <td><span class="tbl-note">${esc(ln)||'<span style="color:var(--muted2)">—</span>'}</span></td>
+      <td class="tbl-muted">${fmtDate(l.tarih)}</td>
+      <td><button class="tbl-act-btn act-open" onclick="event.stopPropagation();openModal('${l.id}')">Aç</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <div class="search-wrap">
+        <svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-in" type="text" placeholder="İsim, telefon veya şehir ara..." value="${esc(filters.q)}" oninput="setFilter('q',this.value)">
+      </div>
+      <select class="filter-sel" onchange="setFilter('status',this.value)">
+        <option value="">Tüm Statüler</option>
+        ${STATUS_KEYS.map(k=>`<option value="${k}" ${filters.status===k?'selected':''}>${STATUSES[k].label}</option>`).join('')}
+      </select>
+      <select class="filter-sel" onchange="setFilter('sigorta',this.value)">
+        <option value="">Tüm Türler</option>
+        ${sigTypes.map(s=>`<option value="${s}" ${filters.sigorta===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select class="filter-sel" onchange="setFilter('sehir',this.value)">
+        <option value="">Tüm Şehirler</option>
+        ${sehirList.map(s=>`<option value="${s}" ${filters.sehir===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      ${(filters.q||filters.status||filters.sigorta||filters.sehir)?`<button class="filter-clear" onclick="clearFilters()">Temizle ×</button>`:''}
+    </div>
+    <div class="tbl-wrap">
+      ${leads.length ? `
+      <table class="tbl">
+        <thead><tr>
+          ${sortTh('ad','Ad Soyad')}
+          <th>Şehir</th>
+          <th>Sigorta</th>
+          ${sortTh('status','Statü')}
+          ${sortTh('followUp','Takip')}
+          <th>Son Not</th>
+          ${sortTh('tarih','Tarih')}
+          <th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>` : `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>${allLeads.length?'Filtreyle eşleşen lead bulunamadı.':'Henüz lead yok. Landing page\'den form doldurulunca buraya düşer.'}</p>
+      </div>`}
+    </div>`;
+}
+
+function setFilter(key, val) {
+  filters[key] = val;
+  renderLeads();
+}
+function clearFilters() {
+  filters = { q:'', status:'', sigorta:'', sehir:'' };
+  renderLeads();
+}
+function sortBy(col) {
+  if (sortCol===col) sortDir = sortDir==='asc'?'desc':'asc';
+  else { sortCol=col; sortDir='desc'; }
+  renderLeads();
+}
+
+// ===================== KANBAN =====================
+function renderKanban() {
+  const leads = getMerged();
+  const byStatus = {};
+  STATUS_KEYS.forEach(k => byStatus[k]=[]);
+  leads.forEach(l => { const s=l.crm.status||'yeni'; (byStatus[s]=byStatus[s]||[]).push(l); });
+
+  const cols = STATUS_KEYS.map(k => {
+    const s = STATUSES[k];
+    const cards = byStatus[k].sort((a,b)=>new Date(b.tarih)-new Date(a.tarih)).map(l => {
+      const ln = lastNote(l.crm);
+      return `<div class="kanban-card" onclick="openModal('${l.id}')" draggable="true"
+        data-id="${l.id}" data-status="${k}"
+        ondragstart="dragStart(event)" ondragend="dragEnd(event)">
+        <div class="kc-name">${esc(l.ad)}</div>
+        <div class="kc-meta">
+          <div class="kc-row"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${esc(l.sigorta)}</div>
+          <div class="kc-row"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(l.sehir)}</div>
+          ${l.crm.followUp?`<div class="kc-row" style="color:${isOverdue(l.crm.followUp)?'#ef4444':isToday(l.crm.followUp)?'#22c55e':'var(--muted)'}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${fmtDate(l.crm.followUp)}</div>`:''}
+        </div>
+        ${ln?`<div class="kc-note">${esc(ln)}</div>`:''}
+      </div>`;
+    }).join('');
+
+    return `<div class="kanban-col" data-col="${k}"
+      ondragover="dragOver(event)" ondrop="drop(event,\'${k}\')" ondragleave="dragLeave(event)">
+      <div class="kanban-col-hd">
+        <span class="kanban-col-dot" style="background:${s.color}"></span>
+        <span class="kanban-col-title">${s.label}</span>
+        <span class="kanban-col-count">${byStatus[k].length}</span>
+      </div>
+      <div class="kanban-cards">
+        ${cards || `<div class="kanban-empty">Boş</div>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('content').innerHTML = `<div class="kanban-wrap">${cols}</div>`;
+}
+
+let dragId = null;
+function dragStart(e) {
+  dragId = e.currentTarget.dataset.id;
+  e.currentTarget.style.opacity = '.4';
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dragEnd(e) { e.currentTarget.style.opacity='1'; }
+function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function drop(e, status) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!dragId) return;
+  setLeadCRM(dragId, { status });
+  dragId = null;
+  renderKanban();
+}
+
+// ===================== STATS =====================
+function renderStats() {
+  const leads = getMerged();
+  const today = new Date();
+
+  // By sigorta
+  const bySig = {};
+  leads.forEach(l => { bySig[l.sigorta]=(bySig[l.sigorta]||0)+1; });
+  const sigData = Object.entries(bySig).sort((a,b)=>b[1]-a[1]);
+  const maxSig = sigData[0]?.[1]||1;
+
+  // By city (top 10)
+  const byCity = {};
+  leads.forEach(l => { byCity[l.sehir]=(byCity[l.sehir]||0)+1; });
+  const cityData = Object.entries(byCity).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxCity = cityData[0]?.[1]||1;
+
+  // By status
+  const byStat = {};
+  STATUS_KEYS.forEach(k => byStat[k]=0);
+  leads.forEach(l => { const s=l.crm.status||'yeni'; byStat[s]=(byStat[s]||0)+1; });
+  const statTotal = leads.length||1;
+
+  // Daily trend (last 14 days)
+  const days = [];
+  const dayCounts = [];
+  for (let i=13;i>=0;i--) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().slice(0,10);
+    days.push(`${d.getDate()}/${d.getMonth()+1}`);
+    dayCounts.push(leads.filter(l=>l.tarih?.slice(0,10)===ds).length);
+  }
+
+  // Win rate
+  const won = leads.filter(l=>l.crm.status==='kazanildi').length;
+  const lost = leads.filter(l=>l.crm.status==='kaybedildi').length;
+  const wr = won+lost>0 ? Math.round(won/(won+lost)*100) : 0;
+
+  // SVG donut
+  function donut(slices, size=110) {
+    const r=40, ri=22, cx=55, cy=55;
+    let angle = -Math.PI/2;
+    const total = slices.reduce((s,d)=>s+d.value,0)||1;
+    const paths = slices.filter(d=>d.value>0).map(d => {
+      const a = (d.value/total)*Math.PI*2;
+      const x1=cx+r*Math.cos(angle), y1=cy+r*Math.sin(angle);
+      angle+=a;
+      const x2=cx+r*Math.cos(angle), y2=cy+r*Math.sin(angle);
+      const xi2=cx+ri*Math.cos(angle), yi2=cy+ri*Math.sin(angle);
+      const xi1=cx+ri*Math.cos(angle-a), yi1=cy+ri*Math.sin(angle-a);
+      const lg=a>Math.PI?1:0;
+      return `<path d="M${x1},${y1} A${r},${r} 0 ${lg},1 ${x2},${y2} L${xi2},${yi2} A${ri},${ri} 0 ${lg},0 ${xi1},${yi1} Z" fill="${d.color}" opacity=".9"/>`;
+    });
+    return `<svg width="${size}" height="${size}" viewBox="0 0 110 110">${paths.join('')}</svg>`;
+  }
+
+  // Sparkline SVG
+  function spark(values, w=340, h=60) {
+    if (!values.length) return `<svg width="${w}" height="${h}"></svg>`;
+    const max = Math.max(...values,1);
+    const pts = values.map((v,i) => {
+      const x=(i/(values.length-1||1))*w;
+      const y=h-(v/max)*(h-4)-2;
+      return `${x},${y}`;
+    }).join(' ');
+    const fillPts = `0,${h} ${pts} ${w},${h}`;
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible">
+      <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4f86f7" stop-opacity=".3"/><stop offset="100%" stop-color="#4f86f7" stop-opacity="0"/></linearGradient></defs>
+      <polygon points="${fillPts}" fill="url(#sg)"/>
+      <polyline points="${pts}" fill="none" stroke="#4f86f7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  const statusSlices = STATUS_KEYS.map(k=>({value:byStat[k],color:STATUSES[k].color}));
+  const donutSvg = donut(statusSlices);
+
+  document.getElementById('content').innerHTML = `
+    <div class="stats-grid">
+      <div class="card">
+        <div class="card-title">Sigorta Türüne Göre</div>
+        <div class="bar-list">
+          ${sigData.map(([lbl,val])=>`
+            <div class="bar-row">
+              <span class="bar-lbl" title="${esc(lbl)}">${esc(lbl)}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${(val/maxSig*100).toFixed(1)}%;background:var(--accl)"></div></div>
+              <span class="bar-val">${val}</span>
+            </div>`).join('')||'<div style="color:var(--muted);font-size:.82rem">Veri yok</div>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Statüye Göre Dağılım</div>
+        <div class="donut-wrap">
+          ${donutSvg}
+          <div class="donut-legend">
+            ${STATUS_KEYS.filter(k=>byStat[k]>0).map(k=>`
+              <div class="legend-item">
+                <span class="legend-dot" style="background:${STATUSES[k].color}"></span>
+                ${esc(STATUSES[k].label)} <strong style="color:var(--txt);margin-left:4px">${byStat[k]}</strong>
+              </div>`).join('')||'<div style="color:var(--muted);font-size:.82rem">Veri yok</div>'}
+          </div>
+        </div>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <div class="card-title">Son 14 Gün — Günlük Lead Trendi</div>
+        <div class="sparkline-wrap">${spark(dayCounts,700,70)}</div>
+        <div class="spark-labels">
+          ${days.filter((_,i)=>i%2===0).map(d=>`<span class="spark-lbl">${d}</span>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Şehre Göre Top 10</div>
+        <div class="city-list">
+          ${cityData.map(([city,cnt],i)=>`
+            <div class="city-row">
+              <span class="city-rank">${i+1}</span>
+              <span class="city-name">${esc(city)}</span>
+              <div class="city-bar" style="width:${(cnt/maxCity*80).toFixed(0)}px"></div>
+              <span class="city-num">${cnt}</span>
+            </div>`).join('')||'<div style="color:var(--muted);font-size:.82rem">Veri yok</div>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Kazanma Oranı</div>
+        <div class="win-rate">
+          <div class="win-big">%${wr}</div>
+          <div class="win-sub">${won} kazanıldı / ${lost} kaybedildi</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ===================== MODAL =====================
+function openModal(id) {
+  currentLead = id;
+  renderModal(id);
+  document.getElementById('modal-ov').classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('modal-ov').classList.add('hidden');
+  currentLead = null;
+  if (currentView==='leads') renderLeads();
+  else if (currentView==='dashboard') renderDashboard();
+  else if (currentView==='kanban') renderKanban();
+}
+function closeModalOnBg(e) { if(e.target===document.getElementById('modal-ov')) closeModal(); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+function renderModal(id) {
+  const leads = getLeads();
+  const lead = leads.find(l=>l.id===id);
+  if (!lead) return;
+  const crm = getLeadCRM(id);
+
+  document.getElementById('modal-name').textContent = lead.ad;
+
+  // Left: info + status + followup
+  document.getElementById('modal-left').innerHTML = `
+    <div class="modal-section">
+      <div class="modal-sec-title">Müşteri Bilgileri</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-lbl">Ad Soyad</div><div class="info-val">${esc(lead.ad)}</div></div>
+        <div class="info-item"><div class="info-lbl">Telefon</div><div class="info-val"><a href="tel:${esc(lead.tel)}" style="color:var(--accl)">${esc(lead.tel)}</a></div></div>
+        <div class="info-item"><div class="info-lbl">Şehir</div><div class="info-val">${esc(lead.sehir)}</div></div>
+        <div class="info-item"><div class="info-lbl">Sigorta Türü</div><div class="info-val">${esc(lead.sigorta)}</div></div>
+        <div class="info-item"><div class="info-lbl">Kayıt Tarihi</div><div class="info-val">${fmtDateTime(lead.tarih)}</div></div>
+        <div class="info-item"><div class="info-lbl">Son İletişim</div><div class="info-val">${fmtDateTime(crm.lastContact)}</div></div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-sec-title">Durum</div>
+      <div class="modal-field">
+        <label class="modal-label">Statü</label>
+        <select class="modal-select" onchange="updateStatus('${id}',this.value)">
+          ${STATUS_KEYS.map(k=>`<option value="${k}" ${(crm.status||'yeni')===k?'selected':''}>${STATUSES[k].label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Takip Tarihi</label>
+        <input class="modal-date" type="date" value="${crm.followUp||''}" onchange="updateFollowUp('${id}',this.value)">
+      </div>
+    </div>`;
+
+  // Right: notes
+  const noteItems = (crm.notes||[]).slice().reverse().map(n =>
+    `<div class="note-item">
+      <button class="note-del" onclick="deleteNote('${id}','${n.id}')">×</button>
+      <div class="note-text">${esc(n.text)}</div>
+      <div class="note-time">${fmtDateTime(n.tarih)}</div>
+    </div>`
+  ).join('') || '<div class="notes-empty">Henüz not yok</div>';
+
+  document.getElementById('modal-right').innerHTML = `
+    <div class="modal-sec-title">Notlar (${(crm.notes||[]).length})</div>
+    <div class="notes-area">${noteItems}</div>
+    <div class="note-input-wrap">
+      <textarea class="note-ta" id="note-ta-${id}" placeholder="Not ekle..."></textarea>
+      <button class="note-add-btn" onclick="addNote('${id}')">Not Ekle</button>
+    </div>`;
+
+  document.getElementById('modal-del').onclick = () => deleteLead(id);
+}
+
+function updateStatus(id, status) {
+  setLeadCRM(id, { status, lastContact: new Date().toISOString() });
+  showSave();
+}
+function updateFollowUp(id, date) {
+  setLeadCRM(id, { followUp: date||null });
+  showSave();
+}
+function addNote(id) {
+  const ta = document.getElementById(`note-ta-${id}`);
+  const text = ta.value.trim();
+  if (!text) return;
+  const crm = getLeadCRM(id);
+  const notes = crm.notes || [];
+  notes.push({ id: Date.now().toString(36), text, tarih: new Date().toISOString() });
+  setLeadCRM(id, { notes, lastContact: new Date().toISOString() });
+  ta.value = '';
+  renderModal(id);
+  showSave();
+}
+function deleteNote(leadId, noteId) {
+  const crm = getLeadCRM(leadId);
+  setLeadCRM(leadId, { notes: (crm.notes||[]).filter(n=>n.id!==noteId) });
+  renderModal(leadId);
+}
+function deleteLead(id) {
+  if (!confirm('Bu lead\'i silmek istediğinizden emin misiniz?')) return;
+  // Önbellekten kaldır
+  const leads = JSON.parse(localStorage.getItem('sigortaLeads') || '[]').filter(l => l.id !== id);
+  localStorage.setItem('sigortaLeads', JSON.stringify(leads));
+  // Silinenlere ekle (Sheets'ten yeniden çekilince filtrelensin)
+  const deleted = JSON.parse(localStorage.getItem('sigortaDeleted') || '[]');
+  if (!deleted.includes(id)) { deleted.push(id); localStorage.setItem('sigortaDeleted', JSON.stringify(deleted)); }
+  const crm = getCRM(); delete crm[id]; saveCRM(crm);
+  closeModal();
+  render();
+}
+
+function showSave() {
+  const ind = document.getElementById('save-ind');
+  ind.classList.add('show');
+  clearTimeout(showSave._t);
+  showSave._t = setTimeout(()=>ind.classList.remove('show'), 2000);
+}
+
+// ===================== EXPORT =====================
+function exportCSV() {
+  const leads = getMerged();
+  if (!leads.length) { alert('Dışa aktarılacak kayıt yok.'); return; }
+  const header = 'Sıra,Ad Soyad,Telefon,Şehir,Sigorta,Statü,Son Not,Takip Tarihi,Kayıt Tarihi\n';
+  const rows = leads.map((l,i) => {
+    const crm = l.crm;
+    const ln = lastNote(crm).replace(/"/g,'""');
+    return `${i+1},"${l.ad}","${l.tel}","${l.sehir}","${l.sigorta}","${STATUSES[crm.status||'yeni']?.label||''}","${ln}","${fmtDate(crm.followUp)}","${fmtDate(l.tarih)}"`;
+  }).join('\n');
+  const blob = new Blob(['﻿'+header+rows], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download=`crm-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
