@@ -687,7 +687,7 @@ function renderLeads() {
     return `<tr onclick="openModal('${l.id}')">
       <td><span class="tbl-name">${esc(l.ad)}</span><div class="tbl-muted">${esc(l.tel)}</div></td>
       <td>${esc(l.sehir)}</td>
-      <td>${esc(l.sigorta)}</td>
+      <td>${esc(l.sigorta)}${l.mevcutPolice?`<div style="font-size:.65rem;color:#f59e0b;margin-top:2px">↻ ${esc(l.mevcutPolice)}</div>`:''}</td>
       <td>${badge(l.crm.status||'yeni')}</td>
       <td class="tbl-fu">${fuHtml}</td>
       <td><span class="tbl-note">${esc(ln)||'<span style="color:var(--muted2)">—</span>'}</span></td>
@@ -768,7 +768,7 @@ function renderKanban() {
         ondragstart="dragStart(event)" ondragend="dragEnd(event)">
         <div class="kc-name">${esc(l.ad)}</div>
         <div class="kc-meta">
-          <div class="kc-row"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${esc(l.sigorta)}</div>
+          <div class="kc-row"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${esc(l.sigorta)}${l.mevcutPolice?` <span style="color:#f59e0b;font-size:.65rem">↻</span>`:''}</div>
           <div class="kc-row"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(l.sehir)}</div>
           ${l.crm.followUp?`<div class="kc-row" style="color:${isOverdue(l.crm.followUp)?'#ef4444':isToday(l.crm.followUp)?'#22c55e':'var(--muted)'}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${fmtDate(l.crm.followUp)}</div>`:''}
         </div>
@@ -974,6 +974,7 @@ function renderModal(id) {
         <div class="info-item"><div class="info-lbl">Telefon</div><div class="info-val"><a href="tel:${esc(lead.tel)}" style="color:var(--accl)">${esc(lead.tel)}</a></div></div>
         <div class="info-item"><div class="info-lbl">Şehir</div><div class="info-val">${esc(lead.sehir)}</div></div>
         <div class="info-item"><div class="info-lbl">Sigorta Türü</div><div class="info-val">${esc(lead.sigorta)}</div></div>
+        <div class="info-item"><div class="info-lbl">Mevcut Poliçe</div><div class="info-val">${lead.mevcutPolice ? `<span style="color:#f59e0b">Var — ${esc(lead.mevcutPolice)}</span>` : '<span style="color:var(--muted2)">Yok</span>'}</div></div>
         <div class="info-item"><div class="info-lbl">Kayıt Tarihi</div><div class="info-val">${fmtDateTime(lead.tarih)}</div></div>
         <div class="info-item"><div class="info-lbl">Son İletişim</div><div class="info-val">${fmtDateTime(crm.lastContact)}</div></div>
       </div>

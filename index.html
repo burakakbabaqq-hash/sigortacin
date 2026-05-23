@@ -200,6 +200,15 @@
     .picker-item input:checked + .picker-btn span{color:var(--accl)}
     .picker-err{font-size:.75rem;color:#fc8181;margin-top:-8px;margin-bottom:12px;display:none}
     .picker-err.show{display:block}
+    .mevcut-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--bdr);margin-bottom:16px}
+    .mevcut-toggle input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+    .mevcut-toggle-item{position:relative}
+    .mevcut-toggle-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 8px;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;width:100%;transition:background .2s ease,color .2s ease;border-right:1px solid var(--bdr)}
+    .mevcut-toggle-item:last-child .mevcut-toggle-btn{border-right:none}
+    .mevcut-toggle-item input:checked + .mevcut-toggle-btn{background:rgba(26,86,219,.15);color:var(--accl)}
+    .mevcut-toggle-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .mevcut-wrap{display:none;overflow:hidden}
+    .mevcut-wrap.show{display:block;animation:slideDown .22s ease}
 
     /* SUBMIT */
     .btn-submit{width:100%;padding:16px;background:var(--cta);color:#080f1e;font-family:var(--fb);
@@ -611,6 +620,38 @@
               </div>
             </div>
             <div class="picker-err" id="e-sigorta">Lütfen bir sigorta türü seçiniz.</div>
+
+            <label class="picker-label" style="margin-top:4px">Mevcut Poliçeniz Var mı?</label>
+            <div class="mevcut-toggle" role="group" aria-label="Mevcut poliçe durumu">
+              <div class="mevcut-toggle-item">
+                <input type="radio" name="mevcut" id="m-yok" value="yok" checked onchange="toggleMevcut()">
+                <label class="mevcut-toggle-btn" for="m-yok">
+                  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Yok — Yeni müşterim
+                </label>
+              </div>
+              <div class="mevcut-toggle-item">
+                <input type="radio" name="mevcut" id="m-var" value="var" onchange="toggleMevcut()">
+                <label class="mevcut-toggle-btn" for="m-var">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  Var — Yenilemek istiyorum
+                </label>
+              </div>
+            </div>
+
+            <div class="mevcut-wrap" id="mevcut-wrap">
+              <label class="picker-label">Mevcut Poliçenizin Türü</label>
+              <div class="picker" role="group" aria-label="Mevcut poliçe türü">
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-kasko" value="Kasko"><label class="picker-btn" for="ms-kasko"><svg viewBox="0 0 24 24"><rect x="1" y="11" width="22" height="8" rx="1"/><path d="M6 11l2.5-5h7l2.5 5"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/></svg><span>Kasko</span></label></div>
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-trafik" value="Trafik"><label class="picker-btn" for="ms-trafik"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Trafik</span></label></div>
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-saglik" value="Sağlık"><label class="picker-btn" for="ms-saglik"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span>Sağlık</span></label></div>
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-konut" value="Konut"><label class="picker-btn" for="ms-konut"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Konut</span></label></div>
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-dask" value="DASK"><label class="picker-btn" for="ms-dask"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M2 14l3-2 3 2 3-2 3 2 3-2 3 2"/></svg><span>DASK</span></label></div>
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-isyeri" value="İşyeri"><label class="picker-btn" for="ms-isyeri"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><span>İşyeri</span></label></div>
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-hayat" value="Hayat"><label class="picker-btn" for="ms-hayat"><svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg><span>Hayat</span></label></div>
+                <div class="picker-item"><input type="radio" name="mevcut-sigorta" id="ms-kaza" value="Ferdi Kaza"><label class="picker-btn" for="ms-kaza"><svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M6 20v-2a6 6 0 0 1 9.33-5"/><path d="M17 17l2 2 4-4"/></svg><span>Ferdi Kaza</span></label></div>
+              </div>
+            </div>
 
             <button type="submit" class="btn-submit">
               Teklif Talep Et — Ücretsiz
@@ -1054,16 +1095,25 @@
 
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVMZ6H45Iregep3s1adiPj2rtlooSJY19NjMwAG_orNdZ2IDshPP42_jEui3OeV7_p/exec';
 
+  function toggleMevcut() {
+    const isVar = document.getElementById('m-var').checked;
+    document.getElementById('mevcut-wrap').classList.toggle('show', isVar);
+    if (!isVar) document.querySelectorAll('input[name="mevcut-sigorta"]').forEach(r => r.checked = false);
+  }
+
   document.getElementById('lead-form').addEventListener('submit', function(e) {
     e.preventDefault();
     if (!validate()) return;
 
+    const mevcutVar = document.getElementById('m-var').checked;
+    const mevcutSig = document.querySelector('input[name="mevcut-sigorta"]:checked');
     const lead = {
       id: Date.now().toString(36),
       ad: document.getElementById('f-ad').value.trim(),
       tel: document.getElementById('f-tel').value.trim(),
       sehir: document.getElementById('f-sehir').value,
       sigorta: document.querySelector('input[name="sigorta"]:checked').value,
+      mevcutPolice: mevcutVar ? (mevcutSig ? mevcutSig.value : 'Belirtilmedi') : null,
       tarih: new Date().toISOString()
     };
 
