@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasko Prim Hesaplama | Sigortacın.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --navy:#0a1628; --navy-mid:#1a2d4a; --navy-light:#e8edf5; --navy-pale:#f4f6fb;
+  --orange:#E8762A; --orange-light:#fdf0e6;
+  --text:#1a1a1a; --text-mid:#555; --text-light:#888; --border:#e0e6ed; --white:#ffffff;
+}
+body { font-family:'DM Sans',sans-serif; background:var(--navy-pale); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; }
+.card { background:var(--white); border-radius:24px; width:100%; max-width:480px; overflow:hidden; box-shadow:0 2px 40px rgba(10,22,40,0.12); }
+
+.header { background:var(--navy); padding:32px 32px 28px; position:relative; overflow:hidden; }
+.header::before { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; border-radius:50%; background:rgba(255,255,255,0.04); }
+.header-badge { display:inline-block; background:rgba(232,118,42,0.25); color:var(--orange); font-size:11px; font-weight:500; letter-spacing:0.08em; padding:4px 12px; border-radius:20px; margin-bottom:14px; text-transform:uppercase; }
+.header h1 { font-family:'Fraunces',serif; font-weight:300; font-size:26px; color:var(--white); line-height:1.3; margin-bottom:8px; }
+.header p { font-size:13px; color:rgba(255,255,255,0.6); line-height:1.5; }
+
+.progress-bar { height:3px; background:var(--border); }
+.progress-fill { height:100%; background:var(--orange); transition:width 0.4s ease; }
+
+.step { display:none; padding:28px 32px 32px; }
+.step.active { display:block; }
+.step-label { font-size:11px; font-weight:500; color:var(--navy-mid); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px; }
+.step-question { font-family:'Fraunces',serif; font-weight:400; font-size:20px; color:var(--text); line-height:1.35; margin-bottom:22px; }
+
+.options { display:grid; gap:10px; }
+.options.cols-2 { grid-template-columns:1fr 1fr; }
+.option { border:1.5px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; transition:all 0.18s; background:var(--white); text-align:left; display:flex; align-items:center; gap:12px; }
+.option:hover { border-color:var(--navy-mid); background:var(--navy-pale); }
+.option.selected { border-color:var(--navy); background:var(--navy-light); }
+.option-icon { width:36px; height:36px; border-radius:8px; background:var(--navy-pale); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.option.selected .option-icon { background:rgba(10,22,40,0.12); }
+.option-title { font-size:14px; font-weight:500; color:var(--text); }
+.option-sub { font-size:12px; color:var(--text-light); margin-top:1px; }
+
+.slider-val { font-family:'Fraunces',serif; font-size:38px; font-weight:300; color:var(--navy); margin-bottom:12px; }
+.slider-val span { font-size:16px; color:var(--text-mid); }
+input[type=range] { width:100%; height:4px; -webkit-appearance:none; background:var(--border); border-radius:2px; outline:none; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--orange); cursor:pointer; box-shadow:0 2px 8px rgba(232,118,42,0.35); }
+.slider-labels { display:flex; justify-content:space-between; margin-top:8px; }
+.slider-labels span { font-size:11px; color:var(--text-light); }
+
+.gate-icon { text-align:center; font-size:36px; margin-bottom:12px; }
+.gate-title { font-family:'Fraunces',serif; font-size:19px; font-weight:400; color:var(--text); margin-bottom:6px; text-align:center; }
+.gate-sub { font-size:13px; color:var(--text-mid); line-height:1.6; margin-bottom:16px; text-align:center; }
+.gate-promise { display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; font-size:11px; color:var(--navy-mid); margin-bottom:18px; }
+
+.input-wrap { margin-bottom:10px; }
+.input-wrap input { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:13px 16px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); background:var(--white); outline:none; transition:border-color 0.18s; }
+.input-wrap input::placeholder { color:var(--text-light); }
+.input-wrap input:focus { border-color:var(--navy); }
+.consent { font-size:11px; color:var(--text-light); line-height:1.5; margin-bottom:14px; }
+
+.btn-primary { width:100%; background:var(--orange); color:var(--white); border:none; border-radius:12px; padding:15px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; cursor:pointer; transition:background 0.18s, transform 0.1s; }
+.btn-primary:hover { background:#d4681e; }
+.btn-primary:active { transform:scale(0.98); }
+.btn-secondary { width:100%; background:transparent; color:var(--navy); border:1.5px solid var(--border); border-radius:12px; padding:13px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; margin-top:8px; transition:all 0.18s; }
+.btn-secondary:hover { border-color:var(--navy); background:var(--navy-pale); }
+
+.result-hero { background:var(--navy); border-radius:16px; padding:26px 24px; text-align:center; margin-bottom:14px; position:relative; overflow:hidden; animation:fadeUp 0.5s ease; }
+.result-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.04); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+.result-label { font-size:11px; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px; }
+.result-range { font-family:'Fraunces',serif; font-size:34px; font-weight:300; color:var(--white); line-height:1; margin-bottom:4px; }
+.result-range-lbl { font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:14px; }
+.result-divider { height:1px; background:rgba(255,255,255,0.15); margin-bottom:14px; }
+.result-monthly-lbl { font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:4px; }
+.result-monthly { font-family:'Fraunces',serif; font-size:24px; font-weight:300; color:var(--white); }
+.result-disclaimer { background:rgba(255,255,255,0.1); border-radius:8px; padding:10px 12px; font-size:12px; color:rgba(255,255,255,0.8); line-height:1.5; margin-top:14px; text-align:left; }
+
+.result-items { display:grid; gap:8px; margin-bottom:14px; }
+.result-item { display:flex; align-items:center; gap:10px; background:var(--navy-pale); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--text); }
+.result-dot { width:6px; height:6px; border-radius:50%; background:var(--orange); flex-shrink:0; }
+
+.result-cta { background:var(--orange-light); border-left:3px solid var(--orange); border-radius:10px; padding:14px 16px; font-size:13px; color:var(--text-mid); line-height:1.6; }
+
+@media(max-width:400px){
+  .header{padding:24px 20px 20px}
+  .step{padding:22px 20px 24px}
+  .options.cols-2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="header">
+    <div class="header-badge">Ücretsiz · 2 dakika</div>
+    <h1>Kaskonuz size ne kadara mal olur?</h1>
+    <p>4 soruyla tahmini kasko prim aralığınızı hesaplayalım.</p>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+
+  <!-- Adım 1 -->
+  <div class="step active" id="step1">
+    <div class="step-label">Adım 1 / 4</div>
+    <div class="step-question">Aracınız kaç yaşında?</div>
+    <div class="options">
+      <div class="option" data-step="1" data-val="yeni" onclick="pick(this)">
+        <div class="option-icon">🚗</div>
+        <div><div class="option-title">0 – 3 yıl</div><div class="option-sub">Sıfır veya neredeyse sıfır</div></div>
+      </div>
+      <div class="option" data-step="1" data-val="orta" onclick="pick(this)">
+        <div class="option-icon">🚙</div>
+        <div><div class="option-title">3 – 7 yıl</div><div class="option-sub">Orta yaşlı araç</div></div>
+      </div>
+      <div class="option" data-step="1" data-val="eski" onclick="pick(this)">
+        <div class="option-icon">🛻</div>
+        <div><div class="option-title">7 yıl ve üzeri</div><div class="option-sub">Eski model araç</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adım 2 -->
+  <div class="step" id="step2">
+    <div class="step-label">Adım 2 / 4</div>
+    <div class="step-question">Aracınızın piyasa değeri ne kadar?</div>
+    <div class="slider-val" id="valueVal">500.000 <span>₺</span></div>
+    <input type="range" id="valueSlider" min="100000" max="3000000" value="500000" step="50000" oninput="updateValue(this.value)">
+    <div class="slider-labels"><span>100.000 ₺</span><span>3.000.000 ₺</span></div>
+    <button class="btn-primary" style="margin-top:24px" onclick="goStep(3)">Devam →</button>
+  </div>
+
+  <!-- Adım 3 -->
+  <div class="step" id="step3">
+    <div class="step-label">Adım 3 / 4</div>
+    <div class="step-question">Hangi kasko türünü düşünüyorsunuz?</div>
+    <div class="options">
+      <div class="option" data-step="3" data-val="tam" onclick="pick(this)">
+        <div class="option-icon">🛡️</div>
+        <div><div class="option-title">Tam Kasko</div><div class="option-sub">Her türlü hasar güvencesi</div></div>
+      </div>
+      <div class="option" data-step="3" data-val="mini" onclick="pick(this)">
+        <div class="option-icon">⭐</div>
+        <div><div class="option-title">Mini Kasko</div><div class="option-sub">Temel teminatlar</div></div>
+      </div>
+      <div class="option" data-step="3" data-val="bilmiyorum" onclick="pick(this)">
+        <div class="option-icon">🤔</div>
+        <div><div class="option-title">Bilmiyorum</div><div class="option-sub">Uzman önersin</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adım 4 -->
+  <div class="step" id="step4">
+    <div class="step-label">Adım 4 / 4</div>
+    <div class="step-question">Kaç yıldır hasarsız kullanıyorsunuz?</div>
+    <div class="options cols-2">
+      <div class="option" data-step="4" data-val="sifir" onclick="pick(this)">
+        <div class="option-icon">0️⃣</div>
+        <div><div class="option-title">Hasarım var</div></div>
+      </div>
+      <div class="option" data-step="4" data-val="bir_iki" onclick="pick(this)">
+        <div class="option-icon">1️⃣</div>
+        <div><div class="option-title">1 – 2 yıl</div></div>
+      </div>
+      <div class="option" data-step="4" data-val="uc_dort" onclick="pick(this)">
+        <div class="option-icon">3️⃣</div>
+        <div><div class="option-title">3 – 4 yıl</div></div>
+      </div>
+      <div class="option" data-step="4" data-val="bes_plus" onclick="pick(this)">
+        <div class="option-icon">⭐</div>
+        <div><div class="option-title">5+ yıl</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form kapısı -->
+  <div class="step" id="stepGate">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">Hesaplamanız hazır!</div>
+    <div class="gate-sub">Tahmini kasko prim aralığınızı görmek için bilgilerinizi bırakın.</div>
+    <div class="gate-promise">✓ Ücretsiz &nbsp;·&nbsp; ✓ Taahhütsüz &nbsp;·&nbsp; ✓ 2 saat içinde aranırsınız</div>
+    <div class="input-wrap"><input type="text" id="userName" placeholder="Adınız Soyadınız"></div>
+    <div class="input-wrap"><input type="tel" id="userPhone" placeholder="Telefon numaranız (05xx...)"></div>
+    <div class="consent">Bilgileriniz yalnızca size ulaşmak için kullanılır. KVKK kapsamında gizli tutulur.</div>
+    <button class="btn-primary" onclick="submitAndShow()">Sonucu gör →</button>
+    <button class="btn-secondary" onclick="resetCalc()">Baştan başla</button>
+  </div>
+
+  <!-- Sonuç -->
+  <div class="step" id="stepResult">
+    <div class="result-hero">
+      <div class="result-label">Tahmini yıllık kasko prim aralığınız</div>
+      <div class="result-range" id="resultRange">—</div>
+      <div class="result-range-lbl">yıllık aralık</div>
+      <div class="result-divider"></div>
+      <div class="result-monthly-lbl">aylık ortalama</div>
+      <div class="result-monthly" id="resultMonthly">—</div>
+      <div class="result-disclaimer">
+        Bu tahmini bir başlangıç noktasıdır. Gerçek teklifiniz araç markasına, şirkete ve teminat detaylarına göre farklılık gösterebilir.
+      </div>
+    </div>
+
+    <div class="result-items" id="resultItems"></div>
+
+    <div class="result-cta">
+      📞 <strong>Uzmanımız sizi 2 saat içinde arayacak.</strong> Bilgileriniz alındı — sana özel en iyi kasko teklifini birlikte değerlendireceğiz.<br><br>
+      ✅ 20+ sigorta şirketi arasından en uygununu buluyoruz.
+    </div>
+    <button class="btn-secondary" style="margin-top:14px" onclick="resetCalc()">Yeniden hesapla</button>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVMZ6H45Iregep3s1adiPj2rtlooSJY19NjMwAG_orNdZ2IDshPP42_jEui3OeV7_p/exec';
+const A = { aracYas:null, aracDeger:500000, kaskoTur:null, hasarsizlik:null };
+let cur = 1;
+
+function pick(el) {
+  const s = el.dataset.step;
+  document.querySelectorAll(`.option[data-step="${s}"]`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const v = el.dataset.val;
+  if (s=='1') { A.aracYas=v;      setTimeout(()=>goStep(2),220); }
+  if (s=='3') { A.kaskoTur=v;     setTimeout(()=>goStep(4),220); }
+  if (s=='4') { A.hasarsizlik=v;  setTimeout(()=>goStep('Gate'),220); }
+}
+
+function updateValue(v) {
+  A.aracDeger = parseInt(v);
+  document.getElementById('valueVal').innerHTML = parseInt(v).toLocaleString('tr-TR') + ' <span>₺</span>';
+}
+
+function goStep(n) {
+  const prevId = cur === 'Gate' ? 'stepGate' : 'step' + cur;
+  document.getElementById(prevId).classList.remove('active');
+  cur = n;
+  const nextId = n === 'Gate' ? 'stepGate' : 'step' + n;
+  document.getElementById(nextId).classList.add('active');
+  const pct = n === 'Gate' ? 90 : ((n-1)/4*100);
+  document.getElementById('progress').style.width = pct + '%';
+}
+
+function calcRange() {
+  // Base oran: araç değerinin %2.5 - %4.5'i
+  let minRate = 0.025;
+  let maxRate = 0.045;
+
+  // Araç yaşına göre ayarla
+  if (A.aracYas === 'yeni')  { minRate = 0.030; maxRate = 0.050; }
+  if (A.aracYas === 'orta') { minRate = 0.025; maxRate = 0.042; }
+  if (A.aracYas === 'eski') { minRate = 0.020; maxRate = 0.035; }
+
+  // Kasko türüne göre
+  if (A.kaskoTur === 'mini') { minRate *= 0.65; maxRate *= 0.65; }
+  if (A.kaskoTur === 'bilmiyorum') { minRate *= 0.85; maxRate *= 1.0; }
+
+  // Hasarsızlık indirimi
+  if (A.hasarsizlik === 'sifir')    { minRate *= 1.15; maxRate *= 1.15; }
+  if (A.hasarsizlik === 'bir_iki')  { minRate *= 1.00; maxRate *= 1.00; }
+  if (A.hasarsizlik === 'uc_dort')  { minRate *= 0.88; maxRate *= 0.88; }
+  if (A.hasarsizlik === 'bes_plus') { minRate *= 0.78; maxRate *= 0.78; }
+
+  let min = Math.round(A.aracDeger * minRate / 100) * 100;
+  let max = Math.round(A.aracDeger * maxRate / 100) * 100;
+
+  return [min, max];
+}
+
+function fmt(n) { return n.toLocaleString('tr-TR') + ' ₺'; }
+
+function submitAndShow() {
+  const name  = document.getElementById('userName').value.trim();
+  const phone = document.getElementById('userPhone').value.trim();
+  if (!name)             { document.getElementById('userName').focus(); return; }
+  if (phone.length < 10) { document.getElementById('userPhone').focus(); return; }
+
+  const [min, max] = calcRange();
+  const monthly = Math.round(((min + max) / 2) / 12 / 100) * 100;
+
+  const lead = {
+    id: Date.now().toString(36),
+    ad: name,
+    tel: phone,
+    kaynak: 'kasko-hesaplama',
+    aracYas: A.aracYas,
+    aracDeger: A.aracDeger,
+    kaskoTur: A.kaskoTur,
+    hasarsizlik: A.hasarsizlik,
+    tahminiMin: min,
+    tahminiMax: max,
+    tarih: new Date().toISOString()
+  };
+  fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(lead) });
+
+  document.getElementById('resultRange').textContent   = fmt(min) + ' – ' + fmt(max);
+  document.getElementById('resultMonthly').textContent = fmt(monthly);
+
+  const yasLabel = { yeni:'0-3 yıl araç', orta:'3-7 yıl araç', eski:'7+ yıl araç' }[A.aracYas];
+  const turLabel = { tam:'Tam Kasko', mini:'Mini Kasko', bilmiyorum:'Uzman önerisine açık' }[A.kaskoTur];
+  const hasarLabel = { sifir:'Hasarsız değil', bir_iki:'1-2 yıl hasarsız', uc_dort:'3-4 yıl hasarsız', bes_plus:'5+ yıl hasarsız — maksimum indirim' }[A.hasarsizlik];
+
+  const items = [
+    'Araç değeri: ' + fmt(A.aracDeger),
+    yasLabel,
+    turLabel,
+    hasarLabel
+  ];
+
+  document.getElementById('resultItems').innerHTML =
+    items.map(i=>`<div class="result-item"><div class="result-dot"></div>${i}</div>`).join('');
+
+  document.getElementById('stepGate').classList.remove('active');
+  document.getElementById('stepResult').classList.add('active');
+  document.getElementById('progress').style.width = '100%';
+  cur = 'Result';
+}
+
+function resetCalc() {
+  Object.assign(A, { aracYas:null, aracDeger:500000, kaskoTur:null, hasarsizlik:null });
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('valueSlider').value = 500000;
+  document.getElementById('valueVal').innerHTML = '500.000 <span>₺</span>';
+  document.getElementById('userName').value = '';
+  document.getElementById('userPhone').value = '';
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('progress').style.width = '0%';
+  cur = 1;
+}
+</script>
+</body>
+</html>
